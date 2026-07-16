@@ -14,6 +14,7 @@ analyse de data drift.
 - `tests/` — tests de l'API (pytest).
 - `streamlit_app/` — Étape 6 : interface utilisateur qui appelle l'API.
 - `drift_analysis.ipynb` — Étape 7 : indicateurs de data drift.
+- `presentation/soutenance.html` — support de présentation (objectifs, méthode, résultats, perspectives).
 - `.github/workflows/ci-cd.yml` — tests automatiques + déploiement continu.
 - `Dockerfile` — image de l'API pour un déploiement cloud (Render, Fly.io, AWS, GCP...).
 
@@ -32,7 +33,7 @@ mlflow ui --backend-store-uri sqlite:///mlflow.db
 uvicorn api.main:app --reload
 
 # 4) Tests de l'API
-pytest tests/ -v
+python -m pytest tests/ -v
 
 # 5) Interface Streamlit
 streamlit run streamlit_app/app.py

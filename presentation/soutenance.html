@@ -1,0 +1,467 @@
+<title>Soutenance — Scoring du risque d'escalade de conflit</title>
+<style>
+  :root {
+    --bg: #eef0ef;
+    --surface: #ffffff;
+    --surface-2: #f4f5f3;
+    --text: #141a24;
+    --text-muted: #57616f;
+    --border: #dde1de;
+    --accent: #1f7a90;
+    --accent-strong: #15616f;
+    --accent-wash: #1f7a901a;
+    --good: #2f8f5f;
+    --warning: #b9791f;
+    --critical: #b03f2e;
+    --shadow: 0 1px 2px rgba(20, 26, 36, 0.06), 0 8px 24px rgba(20, 26, 36, 0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0a0f1a;
+      --surface: #121a2b;
+      --surface-2: #182238;
+      --text: #e8ecf4;
+      --text-muted: #8b95ab;
+      --border: #243050;
+      --accent: #4fb3c9;
+      --accent-strong: #7ecbdc;
+      --accent-wash: #4fb3c920;
+      --good: #4caf7d;
+      --warning: #d9a441;
+      --critical: #d16552;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0a0f1a;
+    --surface: #121a2b;
+    --surface-2: #182238;
+    --text: #e8ecf4;
+    --text-muted: #8b95ab;
+    --border: #243050;
+    --accent: #4fb3c9;
+    --accent-strong: #7ecbdc;
+    --accent-wash: #4fb3c920;
+    --good: #4caf7d;
+    --warning: #d9a441;
+    --critical: #d16552;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef0ef;
+    --surface: #ffffff;
+    --surface-2: #f4f5f3;
+    --text: #141a24;
+    --text-muted: #57616f;
+    --border: #dde1de;
+    --accent: #1f7a90;
+    --accent-strong: #15616f;
+    --accent-wash: #1f7a901a;
+    --good: #2f8f5f;
+    --warning: #b9791f;
+    --critical: #b03f2e;
+    --shadow: 0 1px 2px rgba(20, 26, 36, 0.06), 0 8px 24px rgba(20, 26, 36, 0.05);
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+  }
+  body {
+    font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .display {
+    font-family: ui-sans-serif, "Segoe UI Semibold", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .mono {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .eyebrow {
+    font-family: ui-sans-serif, "Segoe UI Semibold", "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 5rem;
+  }
+
+  header.cover {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding-bottom: 2.5rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  header.cover .display { font-size: clamp(1.9rem, 4.2vw, 2.7rem); margin: 0; }
+  header.cover p.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    max-width: 60ch;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.4rem;
+    margin-top: 0.6rem;
+    font-family: ui-sans-serif, "Segoe UI", Arial, sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .meta-row span b { color: var(--text); font-weight: 600; }
+
+  section { margin-bottom: 3rem; }
+  section > .eyebrow { display: block; margin-bottom: 0.5rem; }
+  section > h2.display { font-size: 1.5rem; margin: 0 0 1rem; }
+  section p { max-width: 68ch; }
+  section p.lede { font-size: 1.05rem; color: var(--text); }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1.2rem 0 1.6rem;
+  }
+  .stat-tile {
+    background: var(--surface);
+    padding: 1.1rem 1.2rem;
+  }
+  .stat-tile .value {
+    font-family: ui-sans-serif, "Segoe UI Semibold", Arial, sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-tile .label {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.15rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.4rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+
+  /* --- bar chart --- */
+  .chart-wrap { margin-top: 1.2rem; }
+  .chart-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.9rem;
+    font-family: ui-sans-serif, Arial, sans-serif;
+  }
+  .chart-title-row h3 { margin: 0; font-size: 0.95rem; font-weight: 700; }
+  .chart-title-row span { color: var(--text-muted); font-size: 0.8rem; }
+  .bar-row {
+    display: grid;
+    grid-template-columns: 132px 1fr 64px;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.42rem 0;
+  }
+  .bar-row .name {
+    font-family: ui-sans-serif, Arial, sans-serif;
+    font-size: 0.85rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bar-row.winner .name { font-weight: 700; color: var(--accent-strong); }
+  .bar-track {
+    position: relative;
+    height: 10px;
+    background: var(--surface-2);
+    border-radius: 6px;
+  }
+  .bar-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    height: 100%;
+    border-radius: 6px;
+    background: var(--border);
+  }
+  .bar-row.winner .bar-fill { background: var(--accent); }
+  .bar-row .val {
+    font-family: ui-sans-serif, Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85rem;
+    text-align: right;
+    color: var(--text-muted);
+  }
+  .bar-row.winner .val { color: var(--accent-strong); font-weight: 700; }
+  .chart-caption {
+    margin-top: 0.8rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    max-width: 60ch;
+  }
+
+  /* --- pipeline steps --- */
+  .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
+  .steps li {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+  }
+  .steps li:first-child { border-top: none; }
+  .steps .n {
+    font-family: ui-sans-serif, Arial, sans-serif;
+    font-weight: 800;
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .steps h4 {
+    margin: 0 0 0.2rem;
+    font-family: ui-sans-serif, Arial, sans-serif;
+    font-size: 0.95rem;
+  }
+  .steps p { margin: 0; font-size: 0.92rem; color: var(--text-muted); max-width: 62ch; }
+
+  /* --- two-col cards --- */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .grid-2 .card h4 {
+    margin: 0 0 0.4rem;
+    font-family: ui-sans-serif, Arial, sans-serif;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .grid-2 .card p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+  .pill {
+    font-family: ui-sans-serif, Arial, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
+  .pill.good { background: color-mix(in oklab, var(--good) 18%, transparent); color: var(--good); }
+  .pill.warning { background: color-mix(in oklab, var(--warning) 18%, transparent); color: var(--warning); }
+  .pill.critical { background: color-mix(in oklab, var(--critical) 18%, transparent); color: var(--critical); }
+
+  table.metrics {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: ui-sans-serif, Arial, sans-serif;
+    font-size: 0.85rem;
+  }
+  table.metrics th, table.metrics td {
+    padding: 0.55rem 0.7rem;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  table.metrics th:first-child, table.metrics td:first-child { text-align: left; }
+  table.metrics thead th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  table.metrics td { font-variant-numeric: tabular-nums; }
+  table.metrics tbody tr.winner td:first-child { color: var(--accent-strong); font-weight: 700; }
+  .table-scroll { overflow-x: auto; }
+
+  code {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    background: var(--surface-2);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    font-family: ui-sans-serif, Arial, sans-serif;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 520px) {
+    .bar-row { grid-template-columns: 96px 1fr 52px; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="cover">
+    <span class="eyebrow">Examen MLOps &amp; Déploiement — Support de soutenance</span>
+    <h1 class="display">Scoring du risque d'escalade de conflit géopolitique</h1>
+    <p class="subtitle">Du nettoyage des données à une API de scoring déployable : cycle complet MLOps sur un panel mensuel de 20 pays, avec score métier, comparaison de modèles, interprétabilité et surveillance du drift.</p>
+    <div class="meta-row">
+      <span>Dépôt : <b>github.com/gedeon92/ExamensML</b></span>
+      <span>Dataset : <b>1 320 lignes</b> · 20 pays · 2020-01 → 2025-06</span>
+      <span>Cible : <b>conflict_escalation_6m</b> (binaire)</span>
+    </div>
+  </header>
+
+  <section id="objectifs">
+    <span class="eyebrow">Objectifs</span>
+    <h2 class="display">Prédire, chiffrer, déployer</h2>
+    <p class="lede">Construire un modèle de scoring binaire qui anticipe une escalade de conflit dans les 6 mois, en pondérant explicitement le coût d'une alerte manquée contre celui d'une fausse alerte — puis l'industrialiser : API, interface, suivi MLflow, et surveillance de la dérive dans le temps.</p>
+    <div class="stat-row">
+      <div class="stat-tile"><div class="value">31,4&nbsp;%</div><div class="label">taux d'escalade (classe positive)</div></div>
+      <div class="stat-tile"><div class="value mono">5:1</div><div class="label">coût faux négatif / faux positif</div></div>
+      <div class="stat-tile"><div class="value">3</div><div class="label">modèles comparés à une baseline</div></div>
+      <div class="stat-tile"><div class="value">7</div><div class="label">étapes du pipeline MLOps</div></div>
+    </div>
+  </section>
+
+  <section id="methode">
+    <span class="eyebrow">Méthode</span>
+    <h2 class="display">Le pipeline, étape par étape</h2>
+    <ol class="steps">
+      <li><span class="n mono">01</span><div><h4>Environnement MLflow</h4><p>Tracking local (SQLite), expérience dédiée, run de test pour valider la journalisation avant l'entraînement des modèles.</p></div></li>
+      <li><span class="n mono">02</span><div><h4>Préparation des données</h4><p>Nettoyage, correction d'un bug de valeur sentinelle (<code>last_conflict_year = 0</code>), détection et retrait de deux variables de fuite (<code>instability_score</code>, <code>political_stability_index</code>), split <strong>chronologique</strong> train/test.</p></div></li>
+      <li><span class="n mono">03</span><div><h4>Score métier</h4><p>Une escalade non détectée coûte 5× plus qu'une fausse alerte — logique d'alerte précoce, transposée d'un scoring de risque de crédit.</p></div></li>
+      <li><span class="n mono">04</span><div><h4>Modélisation</h4><p>Logistic Regression, Random Forest, XGBoost — <code>GridSearchCV</code> optimisé sur le score métier, SMOTE appliqué dans les folds d'entraînement uniquement, interprétabilité SHAP + LIME.</p></div></li>
+      <li><span class="n mono">05</span><div><h4>API de scoring</h4><p>FastAPI, tests automatisés, image Docker, pipeline CI/CD GitHub Actions.</p></div></li>
+      <li><span class="n mono">06</span><div><h4>Interface Streamlit</h4><p>Saisie manuelle des indicateurs d'un pays, appel à l'API, résultat visuel avec niveau de risque.</p></div></li>
+      <li><span class="n mono">07</span><div><h4>Data drift</h4><p>PSI, test de Kolmogorov-Smirnov, Chi², dérive des prédictions — et une stratégie de réentraînement.</p></div></li>
+    </ol>
+  </section>
+
+  <section id="resultats">
+    <span class="eyebrow">Résultats</span>
+    <h2 class="display">Random Forest l'emporte sur le score métier</h2>
+    <p>Les trois modèles battent largement la stratégie naïve « ne jamais alerter ». Random Forest obtient le meilleur score métier ; XGBoost a le meilleur ROC AUC mais un seuil par défaut moins bien calibré pour notre coût 5:1.</p>
+
+    <div class="card chart-wrap">
+      <div class="chart-title-row">
+        <h3>Score métier par modèle</h3>
+        <span>gain relatif vs. « ne jamais alerter » — 1,0 = coût nul</span>
+      </div>
+
+      <div class="bar-row">
+        <span class="name">Baseline</span>
+        <span class="bar-track"><span class="bar-fill" style="width:0%"></span></span>
+        <span class="val mono">0,000</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">XGBoost</span>
+        <span class="bar-track"><span class="bar-fill" style="width:67.5%"></span></span>
+        <span class="val mono">0,554</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">Logistic Regression</span>
+        <span class="bar-track"><span class="bar-fill" style="width:69.3%"></span></span>
+        <span class="val mono">0,570</span>
+      </div>
+      <div class="bar-row winner">
+        <span class="name">Random Forest</span>
+        <span class="bar-track"><span class="bar-fill" style="width:70.8%"></span></span>
+        <span class="val mono">0,582</span>
+      </div>
+
+      <p class="chart-caption">Barres indexées sur un score métier parfait = 1,0. Random Forest sélectionné pour le déploiement (tag MLflow <code>stage=selected_for_deployment</code>).</p>
+    </div>
+
+    <div class="table-scroll" style="margin-top:1.1rem;">
+      <table class="metrics">
+        <thead>
+          <tr><th>Modèle</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC AUC</th><th>Score métier</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Baseline</td><td>0,696</td><td>0,000</td><td>0,000</td><td>0,000</td><td>0,500</td><td>0,000</td></tr>
+          <tr><td>XGBoost</td><td>0,769</td><td>0,617</td><td>0,633</td><td>0,625</td><td>0,849</td><td>0,554</td></tr>
+          <tr><td>Logistic Regression</td><td>0,777</td><td>0,630</td><td>0,646</td><td>0,638</td><td>0,837</td><td>0,570</td></tr>
+          <tr class="winner"><td>Random Forest</td><td>0,750</td><td>0,574</td><td>0,684</td><td>0,624</td><td>0,830</td><td>0,582</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:1.1rem;">SHAP et l'importance native s'accordent : <code>protest_events_last_3m</code>, <code>rolling_protest_avg_6m</code> et <code>sanctions_active</code> dominent — cohérent avec l'intuition métier. LIME confirme sur un cas réel (Corée du Nord, forte activité de protestation) que ce sont bien ces variables qui déclenchent une prédiction à risque.</p>
+  </section>
+
+  <section id="deploiement">
+    <span class="eyebrow">Déploiement</span>
+    <h2 class="display">De l'expérimentation au service</h2>
+    <div class="grid-2">
+      <div class="card">
+        <h4>API FastAPI <span class="pill good">Testée</span></h4>
+        <p>Endpoints <code>/health</code> et <code>/predict</code>, feature engineering partagé avec le notebook, validation Pydantic stricte. Tests pytest + CI GitHub Actions verts.</p>
+      </div>
+      <div class="card">
+        <h4>Interface Streamlit <span class="pill good">Testée</span></h4>
+        <p>Formulaire de saisie manuelle par pays/mois, appel direct à l'API, probabilité affichée avec message de risque coloré.</p>
+      </div>
+      <div class="card">
+        <h4>CI/CD <span class="pill good">Vert</span></h4>
+        <p>Tests automatiques à chaque push/PR ; déploiement continu déclenché par webhook une fois un service cloud connecté.</p>
+      </div>
+      <div class="card">
+        <h4>Déploiement cloud <span class="pill warning">À finaliser</span></h4>
+        <p>Image Docker prête (Render, Fly.io, AWS, GCP...) — nécessite la création d'un compte/service cloud côté équipe projet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="drift">
+    <span class="eyebrow">Surveillance</span>
+    <h2 class="display">Data drift &amp; réentraînement</h2>
+    <p>Sur la période de test (2024-06 → 2025-06) simulant un batch récent : dérive globalement limitée. <code>protest_acceleration</code> et <code>arms_imports_index</code> montrent une dérive modérée à surveiller ; la dérive des scores prédits (PSI = 0,19) reste juste sous le seuil d'alerte.</p>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Indicateurs suivis</h4>
+        <p>PSI &amp; test KS par feature, Chi² sur les catégorielles, PSI des scores prédits (disponible en temps réel, contrairement aux étiquettes retardées de 6 mois).</p>
+      </div>
+      <div class="card">
+        <h4>Stratégie de réentraînement</h4>
+        <p>Réentraînement trimestriel programmé + déclenchement anticipé si PSI &gt; 0,2 ou chute du score métier réel sous le baseline de déploiement (0,582) — promotion en champion/challenger via MLflow.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="perspectives">
+    <span class="eyebrow">Perspectives</span>
+    <h2 class="display">Ce qui viendrait ensuite</h2>
+    <div class="grid-2">
+      <div class="card"><h4>Déploiement cloud réel</h4><p>Connecter le webhook CI/CD à un service (Render/Fly.io/AWS/GCP) pour une API réellement accessible en ligne.</p></div>
+      <div class="card"><h4>Registre de modèles MLflow</h4><p>Formaliser la promotion champion/challenger avec le Model Registry plutôt qu'un simple tag.</p></div>
+      <div class="card"><h4>Boucle de monitoring automatisée</h4><p>Job planifié qui recalcule PSI/KS à chaque nouveau batch et alerte l'équipe (Slack/email) sans intervention manuelle.</p></div>
+      <div class="card"><h4>Revue humaine des alertes critiques</h4><p>Pour les prédictions à risque « élevé », une validation par un analyste avant toute décision opérationnelle.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Examen MLOps et Déploiement — Gedeon Baroki</span>
+    <span><a href="https://github.com/gedeon92/ExamensML">github.com/gedeon92/ExamensML</a></span>
+  </footer>
+
+</div>
