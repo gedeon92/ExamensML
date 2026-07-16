@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+mlruns/
+mlflow.db
+mlflow_smoke_test.txt
+uvicorn_test.log
+.venv/
+venv/
+tests/
+*.ipynb
+*.csv
+*.pdf

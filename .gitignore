@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Artefacts MLflow locaux (le tracking est reproductible en relançant le notebook)
+mlruns/
+mlflow.db
+mlflow_smoke_test.txt
+
+# Logs de test locaux
+uvicorn_test.log
+
+# Environnements virtuels
+.venv/
+venv/
+.claude/
