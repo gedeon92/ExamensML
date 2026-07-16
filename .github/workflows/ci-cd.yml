@@ -20,7 +20,9 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: Lancer les tests de l'API
-        run: pytest tests/ -v
+        # "python -m pytest" (et non "pytest") ajoute la racine du repo à sys.path,
+        # nécessaire pour que "from api.main import app" soit importable.
+        run: python -m pytest tests/ -v
 
   deploy:
     needs: test
