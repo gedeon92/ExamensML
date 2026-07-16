@@ -5,7 +5,8 @@ import pandas as pd
 import requests
 import streamlit as st
 
-API_URL = os.environ.get("API_URL", "http://localhost:8000")
+# En développement local : API_URL=http://localhost:8000 streamlit run streamlit_app/app.py
+API_URL = os.environ.get("API_URL", "https://examensml-api.onrender.com")
 
 st.set_page_config(page_title="Risque d'escalade de conflit", page_icon="🌍")
 st.title("🌍 Scoring du risque d'escalade de conflit géopolitique")
